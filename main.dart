@@ -56,7 +56,8 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
     _controller = AnimationController(
       duration: const Duration(seconds: 5),
       vsync: this,
-    )..repeat();
+    );
+    if (_isRGBEnabled) _controller.repeat();
   }
 
   @override
@@ -73,18 +74,10 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
       title: 'UI',
       theme: ThemeData(
           scaffoldBackgroundColor: backgroundColor,
-          textTheme: TextTheme(
-            bodyText1: TextStyle(color: primaryColor),
-            bodyText2: TextStyle(color: primaryColor),
-            headline1: TextStyle(color: primaryColor),
-            headline2: TextStyle(color: primaryColor),
-            headline3: TextStyle(color: primaryColor),
-            headline4: TextStyle(color: primaryColor),
-            headline5: TextStyle(color: primaryColor),
-            headline6: TextStyle(color: primaryColor),
-            subtitle1: TextStyle(color: primaryColor),
-            subtitle2: TextStyle(color: primaryColor),
-          ),
+          textTheme: Theme.of(context).textTheme.apply(
+                bodyColor: primaryColor,
+                displayColor: primaryColor,
+              ),
           colorScheme: ColorScheme.fromSwatch(
             primarySwatch: getMaterialColor(primaryColor),
             accentColor: accentColor,
@@ -127,6 +120,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                 getDrawerOption('Toggle RGB Effect', () {
                   setState(() {
                     _isRGBEnabled = !_isRGBEnabled;
+                    _isRGBEnabled ? _controller.repeat() : _controller.stop();
                   });
                 }),
                 getDrawerOption('Toggle BG Image/Background', () {
