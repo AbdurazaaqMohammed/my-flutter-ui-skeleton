@@ -6,6 +6,3 @@ Skeleton (UI elements only) for my flutter apps
 * Adjust font size
 * Set background image
 * Save, load and autosave settings
-
-# Todo
-make this AnimationController not run all the time
