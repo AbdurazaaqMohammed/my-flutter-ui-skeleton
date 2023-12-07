@@ -13,16 +13,18 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
+  String bgImage = '';
+
   Color primaryColor = Colors.blue;
   Color accentColor = Colors.purple;
   Color backgroundColor = Colors.black;
   double _fontSize = 32;
-  //final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late AnimationController _controller;
   bool _isRGBEnabled = false;
   bool _autoSave = false;
   bool useImageBG = false;
-  String bgImage = '';
+  //bool _isFabVisible = true;
+  //final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   void _saveSettings() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -39,7 +41,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       _isRGBEnabled = prefs.getBool('rgb') ?? _isRGBEnabled;
-      _isRGBEnabled = prefs.getBool('autoSave') ?? _autoSave;
+      _autoSave = prefs.getBool('autoSave') ?? _autoSave;
       _fontSize = prefs.getDouble('fontSize') ?? _fontSize;
       primaryColor = Color(prefs.getInt('primaryColor') ?? primaryColor.value);
       accentColor = Color(prefs.getInt('primaryColor') ?? accentColor.value);
@@ -64,7 +66,6 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
   void dispose() {
     if (_autoSave) _saveSettings();
     _controller.dispose();
-    // takeInput.dispose();
     super.dispose();
   }
 
@@ -74,6 +75,9 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
       title: 'UI',
       theme: ThemeData(
           scaffoldBackgroundColor: backgroundColor,
+          listTileTheme: ListTileThemeData(
+              textColor: primaryColor,
+              titleTextStyle: TextStyle(color: primaryColor)),
           textTheme: Theme.of(context).textTheme.apply(
                 bodyColor: primaryColor,
                 displayColor: primaryColor,
@@ -83,50 +87,27 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
             accentColor: accentColor,
           )),
       home: Scaffold(
+          /*key: _scaffoldKey,
+          floatingActionButton: _isFabVisible
+              ? FloatingActionButton(
+                  foregroundColor: primaryColor,
+                  backgroundColor: Colors.transparent,
+                  onPressed: () {
+                    _scaffoldKey.currentState?.openDrawer();
+                  },
+                  shape: RoundedRectangleBorder(
+                    side: BorderSide(width: 2, color: primaryColor),
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                  child: const Icon(Icons.settings),
+                )
+              : null,*/
           appBar: AppBar(),
           drawer: Drawer(
               backgroundColor: Colors.transparent.withOpacity(0.4),
               child: ListView(children: [
-                getDrawerOption('Select Font Size', () {
-                  _adjustFontSize();
-                }),
-                getDrawerOption('Select Primary Color', () {
-                  _openColorPicker(primaryColor, (Color newColor) {
-                    setState(() {
-                      primaryColor = newColor;
-                    });
-                  });
-                }),
-                getDrawerOption(
-                    useImageBG
-                        ? 'Select Background Image'
-                        : 'Select Background Color', () {
-                  useImageBG
-                      ? _pickBackgroundImage()
-                      : _openColorPicker(backgroundColor, (Color newColor) {
-                          setState(() {
-                            backgroundColor = newColor;
-                          });
-                        });
-                  ;
-                }),
-                getDrawerOption('Select Accent Color', () {
-                  _openColorPicker(accentColor, (Color newColor) {
-                    setState(() {
-                      accentColor = newColor;
-                    });
-                  });
-                }),
-                getDrawerOption('Toggle RGB Effect', () {
-                  setState(() {
-                    _isRGBEnabled = !_isRGBEnabled;
-                    _isRGBEnabled ? _controller.repeat() : _controller.stop();
-                  });
-                }),
-                getDrawerOption('Toggle BG Image/Background', () {
-                  setState(() {
-                    useImageBG = !useImageBG;
-                  });
+                getDrawerOption('UI Settings', () {
+                  uiSettingsDialog();
                 }),
                 getDrawerOption(
                     'Toggle Auto Save (currently ' + _autoSave.toString() + ')',
@@ -165,6 +146,127 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
     );
   }
 
+  void uiSettingsDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('UI Settings'),
+          backgroundColor: Colors.transparent.withOpacity(0.5),
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(32.0)),
+          ),
+          content: SingleChildScrollView(
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              _buildToggleSwitch(
+                'RGB Effect',
+                _isRGBEnabled,
+                () => setState(() {
+                  _isRGBEnabled = !_isRGBEnabled;
+                }),
+              ),
+              _buildToggleSwitch(
+                'Auto Save',
+                _autoSave,
+                () => setState(() {
+                  _autoSave = !_autoSave;
+                }),
+              ),
+              _buildToggleSwitch(
+                'Use Image Background',
+                useImageBG,
+                () => setState(() {
+                  useImageBG = !useImageBG;
+                }),
+              ),
+              ListTile(
+                title: Text(
+                  'Font Size',
+                                    style: TextStyle(color: primaryColor),
+
+                ),
+                trailing: TextButton(
+                  onPressed: _adjustFontSize,
+                  child: Text(_fontSize.toString()),
+                ),
+              ),
+              ListTile(
+                title: Text(
+                  'Primary Color',
+                  style: TextStyle(color: primaryColor),
+                ),
+                trailing: TextButton(
+                  onPressed: () {
+                    _openColorPicker(primaryColor, (Color newColor) {
+                      setState(() {
+                        primaryColor = newColor;
+                      });
+                    });
+                  },
+                  child: const Text('Select'),
+                ),
+              ),
+              ListTile(
+                title: Text(
+                  useImageBG ? 'Background Image' : 'Background Color',
+                  style: TextStyle(color: primaryColor),
+                ),
+                trailing: TextButton(
+                  onPressed: useImageBG
+                      ? _pickBackgroundImage
+                      : () {
+                          _openColorPicker(backgroundColor, (Color newColor) {
+                            setState(() {
+                              backgroundColor = newColor;
+                            });
+                          });
+                        },
+                  child: const Text('Select'),
+                ),
+              ),
+              ListTile(
+                title: Text(
+                  'Accent Color',
+                  style: TextStyle(color: primaryColor),
+                ),
+                trailing: TextButton(
+                  onPressed: () {
+                    _openColorPicker(accentColor, (Color newColor) {
+                      setState(() {
+                        accentColor = newColor;
+                      });
+                    });
+                  },
+                  child: const Text('Select'),
+                ),
+              ),
+            ]),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildToggleSwitch(String label, bool value, Function() onTap) {
+    return StatefulBuilder(builder: (context, setState) {
+      return ListTile(
+        title: Text(
+          label,
+          style: TextStyle(color: primaryColor),
+        ),
+        trailing: Switch(
+          value: value,
+          onChanged: (bool newValue) {
+            onTap();
+            setState(() {
+              value = newValue;
+            });
+          },
+        ),
+      );
+    });
+  }
+
   AnimatedBuilder getRGBtext(String text) {
     return AnimatedBuilder(
       animation: _controller,
@@ -197,14 +299,14 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
     return MaterialColor(color.value, shades);
   }
 
-  void _openColorPicker(Color colorFiSet, void Function(Color) setColor) {
+  void _openColorPicker(Color toSet, void Function(Color) setColor) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        Color selectedColor = colorFiSet;
+        Color selectedColor = toSet;
         return AlertDialog(
-          title: Text('Pick Custom Color'),
-          shape: RoundedRectangleBorder(
+          title: const Text('Pick Custom Color'),
+          shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(32.0)),
           ),
           content: SingleChildScrollView(
@@ -224,7 +326,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                 setColor(selectedColor);
                 Navigator.of(context).pop();
               },
-              child: Text('OK'),
+              child: const Text('OK'),
             ),
           ],
         );
@@ -236,6 +338,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
     showDialog(
       context: context,
       builder: (BuildContext context) {
+        double oldFontSize = _fontSize;
         double selectedFontSize = _fontSize;
         double maxSliderValue = 512;
         return StatefulBuilder(
@@ -295,6 +398,14 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                       },
                       child: const Text('OK'),
                     ),
+                    const SizedBox(height: 16.0),
+                    TextButton(
+                      onPressed: () {
+                        _fontSize = oldFontSize;
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text('Cancel'),
+                    ),
                   ],
                 ),
               ),
@@ -302,7 +413,9 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
           },
         );
       },
-    );
+    ).then((_) {
+      setState(() {});
+    });
   }
 
   ListTile getDrawerOption(String text, VoidCallback toDoOnTap) {
