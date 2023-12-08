@@ -15,7 +15,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
   String bgImage = '';
 
-  Color primaryColor = Colors.blue;
+  Color appprimaryColor = Colors.blue;
   Color accentColor = Colors.purple;
   Color backgroundColor = Colors.black;
   double _fontSize = 32;
@@ -31,7 +31,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
     prefs.setBool('rgb', _isRGBEnabled);
     prefs.setBool('autoSave', _autoSave);
     prefs.setDouble('fontSize', _fontSize);
-    prefs.setInt('primaryColor', primaryColor.value);
+    prefs.setInt('appprimaryColor', appprimaryColor.value);
     prefs.setInt('accentColor', accentColor.value);
     prefs.setInt('backgroundColor', backgroundColor.value);
     prefs.setString('bgImage', bgImage);
@@ -43,10 +43,11 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
       _isRGBEnabled = prefs.getBool('rgb') ?? _isRGBEnabled;
       _autoSave = prefs.getBool('autoSave') ?? _autoSave;
       _fontSize = prefs.getDouble('fontSize') ?? _fontSize;
-      primaryColor = Color(prefs.getInt('primaryColor') ?? primaryColor.value);
-      accentColor = Color(prefs.getInt('primaryColor') ?? accentColor.value);
+      appprimaryColor =
+          Color(prefs.getInt('appprimaryColor') ?? appprimaryColor.value);
+      accentColor = Color(prefs.getInt('appprimaryColor') ?? accentColor.value);
       backgroundColor =
-          Color(prefs.getInt('primaryColor') ?? backgroundColor.value);
+          Color(prefs.getInt('appprimaryColor') ?? backgroundColor.value);
       bgImage = prefs.getString('bgImage') ?? bgImage;
     });
   }
@@ -74,29 +75,27 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
     return MaterialApp(
       title: 'UI',
       theme: ThemeData(
+          primaryColor: appprimaryColor,
           scaffoldBackgroundColor: backgroundColor,
-          listTileTheme: ListTileThemeData(
-              textColor: primaryColor,
-              titleTextStyle: TextStyle(color: primaryColor)),
           textTheme: Theme.of(context).textTheme.apply(
-                bodyColor: primaryColor,
-                displayColor: primaryColor,
+                bodyColor: appprimaryColor,
+                displayColor: appprimaryColor,
               ),
           colorScheme: ColorScheme.fromSwatch(
-            primarySwatch: getMaterialColor(primaryColor),
+            primarySwatch: getMaterialColor(appprimaryColor),
             accentColor: accentColor,
           )),
       home: Scaffold(
           /*key: _scaffoldKey,
           floatingActionButton: _isFabVisible
               ? FloatingActionButton(
-                  foregroundColor: primaryColor,
+                  foregroundColor: appprimaryColor,
                   backgroundColor: Colors.transparent,
                   onPressed: () {
                     _scaffoldKey.currentState?.openDrawer();
                   },
                   shape: RoundedRectangleBorder(
-                    side: BorderSide(width: 2, color: primaryColor),
+                    side: BorderSide(width: 2, color: appprimaryColor),
                     borderRadius: BorderRadius.circular(100),
                   ),
                   child: const Icon(Icons.settings),
@@ -156,6 +155,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(32.0)),
           ),
+          contentTextStyle: TextStyle(color: appprimaryColor),
           content: SingleChildScrollView(
             child: Column(mainAxisSize: MainAxisSize.min, children: [
               _buildToggleSwitch(
@@ -179,71 +179,55 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                   useImageBG = !useImageBG;
                 }),
               ),
-              ListTile(
-                title: Text(
-                  'Font Size',
-                                    style: TextStyle(color: primaryColor),
-
-                ),
-                trailing: TextButton(
-                  onPressed: _adjustFontSize,
-                  child: Text(_fontSize.toString()),
-                ),
-              ),
-              ListTile(
-                title: Text(
-                  'Primary Color',
-                  style: TextStyle(color: primaryColor),
-                ),
-                trailing: TextButton(
-                  onPressed: () {
-                    _openColorPicker(primaryColor, (Color newColor) {
-                      setState(() {
-                        primaryColor = newColor;
-                      });
-                    });
-                  },
-                  child: const Text('Select'),
-                ),
-              ),
-              ListTile(
-                title: Text(
-                  useImageBG ? 'Background Image' : 'Background Color',
-                  style: TextStyle(color: primaryColor),
-                ),
-                trailing: TextButton(
-                  onPressed: useImageBG
-                      ? _pickBackgroundImage
-                      : () {
-                          _openColorPicker(backgroundColor, (Color newColor) {
-                            setState(() {
-                              backgroundColor = newColor;
-                            });
+              getMenuItem('Font Size', _adjustFontSize, _fontSize.toString()),
+              getMenuItem('Primary Color', () {
+                _openColorPicker(appprimaryColor, (Color newColor) {
+                  setState(() {
+                    appprimaryColor = newColor;
+                  });
+                });
+              }, 'Select'),
+              getMenuItem(useImageBG ? 'Background Image' : 'Background Color',
+                  () {
+                useImageBG
+                    ? _pickBackgroundImage
+                    : () {
+                        _openColorPicker(backgroundColor, (Color newColor) {
+                          setState(() {
+                            backgroundColor = newColor;
                           });
-                        },
-                  child: const Text('Select'),
-                ),
-              ),
-              ListTile(
-                title: Text(
-                  'Accent Color',
-                  style: TextStyle(color: primaryColor),
-                ),
-                trailing: TextButton(
-                  onPressed: () {
-                    _openColorPicker(accentColor, (Color newColor) {
-                      setState(() {
-                        accentColor = newColor;
-                      });
-                    });
-                  },
-                  child: const Text('Select'),
-                ),
-              ),
+                        });
+                      };
+              }, 'Select'),
+              getMenuItem('Accent Color', () {
+                _openColorPicker(accentColor, (Color newColor) {
+                  setState(() {
+                    accentColor = newColor;
+                  });
+                });
+              }, 'Select')
             ]),
           ),
         );
       },
+    );
+  }
+
+  Widget getMenuItem(String label, VoidCallback toDoOnTap, String buttonText) {
+    return ListTile(
+      title: Text(
+        label,
+        style: TextStyle(color: appprimaryColor),
+      ),
+      trailing: TextButton(
+        onPressed: () {
+          toDoOnTap();
+        },
+        child: Text(
+          buttonText,
+          style: TextStyle(color: appprimaryColor),
+        ),
+      ),
     );
   }
 
@@ -252,7 +236,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
       return ListTile(
         title: Text(
           label,
-          style: TextStyle(color: primaryColor),
+          style: TextStyle(color: appprimaryColor),
         ),
         trailing: Switch(
           value: value,
@@ -358,14 +342,14 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 18.0,
-                        color: primaryColor,
+                        color: appprimaryColor,
                       ),
                     ),
                     const SizedBox(height: 16.0),
                     Text(
                       'Current Font Size: $selectedFontSize',
                       style: TextStyle(
-                        color: primaryColor,
+                        color: appprimaryColor,
                       ),
                     ),
                     SliderTheme(
