@@ -4,6 +4,7 @@ import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:flutter_gradient_animation_text/flutter_gradient_animation_text.dart';
 
 void main() => runApp(MaterialApp(home: MyApp()));
 
@@ -21,6 +22,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
   double _fontSize = 32;
   late AnimationController _controller;
   bool _isRGBEnabled = false;
+  bool rgbEffectType = false;
   bool _autoSave = false;
   bool useImageBG = false;
   //bool _isFabVisible = true;
@@ -30,6 +32,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setBool('rgb', _isRGBEnabled);
     prefs.setBool('autoSave', _autoSave);
+    prefs.setBool('rgbEffectType', rgbEffectType);
     prefs.setDouble('fontSize', _fontSize);
     prefs.setInt('appprimaryColor', appprimaryColor.value);
     prefs.setInt('accentColor', accentColor.value);
@@ -43,6 +46,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
       _isRGBEnabled = prefs.getBool('rgb') ?? _isRGBEnabled;
       _autoSave = prefs.getBool('autoSave') ?? _autoSave;
       _fontSize = prefs.getDouble('fontSize') ?? _fontSize;
+      rgbEffectType = prefs.getBool('rgbEffectType') ?? rgbEffectType;
       appprimaryColor =
           Color(prefs.getInt('appprimaryColor') ?? appprimaryColor.value);
       accentColor = Color(prefs.getInt('appprimaryColor') ?? accentColor.value);
@@ -159,10 +163,18 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
           content: SingleChildScrollView(
             child: Column(mainAxisSize: MainAxisSize.min, children: [
               _buildToggleSwitch(
-                'RGB Effect',
+                'Toggle RGB Effect',
                 _isRGBEnabled,
                 () => setState(() {
                   _isRGBEnabled = !_isRGBEnabled;
+                  if (_isRGBEnabled) _controller.repeat();
+                }),
+              ),
+              _buildToggleSwitch(
+                'Effect Type (Wave/Breathing)',
+                rgbEffectType,
+                () => setState(() {
+                  rgbEffectType = !rgbEffectType;
                 }),
               ),
               _buildToggleSwitch(
@@ -251,14 +263,34 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
     });
   }
 
-  AnimatedBuilder getRGBtext(String text) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (BuildContext context, Widget? child) {
-        return Text(text,
-            style: TextStyle(color: getRGB(), fontSize: _fontSize));
-      },
-    );
+  Widget getRGBtext(String text) {
+    if (_isRGBEnabled) _controller.repeat();
+    return rgbEffectType
+        ? AnimatedBuilder(
+            animation: _controller,
+            builder: (BuildContext context, Widget? child) {
+              return Text(text,
+                  style: TextStyle(color: getRGB(), fontSize: _fontSize));
+            },
+          )
+        : GradientAnimationText(
+            text: Text(
+              text,
+              style: TextStyle(
+                fontSize: _fontSize,
+              ),
+            ),
+            colors: const [
+              Color(0xff8f00ff), // violet
+              Colors.indigo,
+              Colors.blue,
+              Colors.green,
+              Colors.yellow,
+              Colors.orange,
+              Colors.red,
+            ],
+            duration: const Duration(seconds: 5),
+          );
   }
 
   MaterialColor getMaterialColor(Color color) {
