@@ -11,3 +11,4 @@ Skeleton (UI elements only) for my flutter apps
 * Figure out why the font size not updating on drag
 * put preview of rgb effects
 * add speed for rgb effects
+* put method for format text (whether rgb or not)
