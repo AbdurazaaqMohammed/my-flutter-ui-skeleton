@@ -51,9 +51,9 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
       rgbEffectType = prefs.getBool('rgbEffectType') ?? rgbEffectType;
       appprimaryColor =
           Color(prefs.getInt('appprimaryColor') ?? appprimaryColor.value);
-      accentColor = Color(prefs.getInt('appprimaryColor') ?? accentColor.value);
+      accentColor = Color(prefs.getInt('accentColor') ?? accentColor.value);
       backgroundColor =
-          Color(prefs.getInt('appprimaryColor') ?? backgroundColor.value);
+          Color(prefs.getInt('backgroundColor') ?? backgroundColor.value);
       bgImage = prefs.getString('bgImage') ?? bgImage;
     });
   }
