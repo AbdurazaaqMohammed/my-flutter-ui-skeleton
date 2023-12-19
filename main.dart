@@ -19,12 +19,14 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
   Color appprimaryColor = Colors.blue;
   Color accentColor = Colors.purple;
   Color backgroundColor = Colors.black;
-  double _fontSize = 32;
+  double _fontSize = 32; //The font size here currently only applies to the main font in the application. This is good for things like clocks and timers. Controlling size of all text in the app should be done carefully as it could break things.
   late AnimationController _controller;
   bool _isRGBEnabled = false;
   bool rgbEffectType = false;
   bool _autoSave = false;
   bool useImageBG = false;
+
+  //Uncomment these if you want to have a floating action button to open settings.
   //bool _isFabVisible = true;
   //final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -81,6 +83,8 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
       theme: ThemeData(
           primaryColor: appprimaryColor,
           scaffoldBackgroundColor: backgroundColor,
+          inputDecorationTheme: InputDecorationTheme(
+                labelStyle: TextStyle(color: appprimaryColor)),
           textTheme: Theme.of(context).textTheme.apply(
                 bodyColor: appprimaryColor,
                 displayColor: appprimaryColor,
