@@ -267,33 +267,58 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
     });
   }
 
-  Widget getRGBtext(String text) {
-    if (_isRGBEnabled) _controller.repeat();
-    return rgbEffectType
-        ? AnimatedBuilder(
-            animation: _controller,
-            builder: (BuildContext context, Widget? child) {
-              return Text(text,
-                  style: TextStyle(color: getRGB(), fontSize: _fontSize));
+
+  Widget getText(String text, BuildContext context) {
+    if (_isRGBEnabled && !_controller.isAnimating) _controller.repeat();
+    return _isRGBEnabled
+        ? rgbEffectType
+            ? AnimatedBuilder(
+                animation: _controller,
+                builder: (BuildContext context, Widget? child) {
+                  return Text(text,
+                      style: TextStyle(color: getRGB(), fontSize: _fontSize));
+                },
+              )
+            : GradientAnimationText(
+                text: Text(
+                  text,
+                  style: TextStyle(
+                    fontSize: _fontSize,
+                  ),
+                ),
+                colors: const [
+                  Color(0xff8f00ff), // violet
+                  Colors.indigo,
+                  Colors.blue,
+                  Colors.green,
+                  Colors.yellow,
+                  Colors.orange,
+                  Colors.red,
+                ],
+                duration: const Duration(seconds: 5),
+              )
+        : SelectableText(
+            text,
+            style: TextStyle(fontSize: _fontSize),
+            contextMenuBuilder: (context, editableTextState) {
+              final List<ContextMenuButtonItem> buttonItems =
+                  editableTextState.contextMenuButtonItems;
+              final TextEditingValue value = editableTextState.textEditingValue;
+              buttonItems.insert(
+                  0,
+                  ContextMenuButtonItem(
+                    label: 'Share',
+                    onPressed: () {
+                      ContextMenuController.removeAny();
+                      Share.share(value.selection.textInside(value.text));
+                    },
+                  ));
+              return AdaptiveTextSelectionToolbar.buttonItems(
+                anchors: editableTextState.contextMenuAnchors,
+                buttonItems: buttonItems,
+              );
             },
-          )
-        : GradientAnimationText(
-            text: Text(
-              text,
-              style: TextStyle(
-                fontSize: _fontSize,
-              ),
-            ),
-            colors: const [
-              Color(0xff8f00ff), // violet
-              Colors.indigo,
-              Colors.blue,
-              Colors.green,
-              Colors.yellow,
-              Colors.orange,
-              Colors.red,
-            ],
-            duration: const Duration(seconds: 5),
+            showCursor: true,
           );
   }
 
